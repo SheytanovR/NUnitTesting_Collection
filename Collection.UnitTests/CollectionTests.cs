@@ -1,3 +1,5 @@
+using NUnit.Framework;
+
 namespace Collection.UnitTests
 {
     public class CollectionTests
@@ -69,6 +71,27 @@ namespace Collection.UnitTests
         }
 
         [Test]
+        public void Test_Collection_SetByIndex()
+        {
+            var collection = new Collection<string>();
+
+            collection.InsertAt(0, "Nikola");
+            collection.InsertAt(1, "Vyara");
+
+            Assert.That(collection[0], Is.EqualTo("Nikola"));
+            Assert.That(collection[1], Is.EqualTo("Vyara"));
+        }
+
+        [Test]
+        public void Test_Collection_SetByInvalidIndex()
+        {
+            var collection = new Collection<int>(2, 3, 6);
+
+            Assert.That(() => { collection[3] = 10; }, Throws.InstanceOf<ArgumentOutOfRangeException>());
+ 
+        }
+
+        [Test]
         public void Test_Collection_GetByInvalidIndex()
         {
             var collection = new Collection<string>("Nikola", "Vyara");
@@ -89,6 +112,72 @@ namespace Collection.UnitTests
             string nestedString=nested.ToString();
 
             Assert.That(nestedString, Is.EqualTo("[[Nikola, Vyara], [2, 20], []]"));
+        }
+
+        [Test]
+        [Timeout(1000)]
+        public void Test_Collection_1MillionItems()
+        {
+            const int itemsCount = 1000000;
+            var collection = new Collection<int>();
+            var items = Enumerable.Range(0, itemsCount).ToArray();
+
+            collection.AddRange(items);
+
+            Assert.That(collection.Count == itemsCount);
+        }
+
+        [Test]
+        public void Test_Collection_ExchnageFirstLast()
+        {
+            var collection = new Collection<int>(2,5,6);
+            var initialIndex0 = collection[0];
+            var initialIndex2 = collection[2];
+
+            collection.Exchange(0, 2);
+            var changedIndex0 = collection[0];
+            var changedIndex2 = collection[2];
+
+            Assert.That(initialIndex0, Is.EqualTo(changedIndex2));
+            Assert.That(initialIndex2, Is.EqualTo(changedIndex0));
+        }
+
+        [Test]
+        public void Test_Collection_RemoveAtStart()
+        {
+            var collection = new Collection<int>(2, 5, 6);
+
+            collection.RemoveAt(0);
+
+            Assert.That(collection.ToString(), Is.EqualTo("[5, 6]"));
+        }
+
+        [Test]
+        public void Test_Collection_AddWithGrow()
+        {
+            var collection = new Collection<int>(2, 5, 6);
+            var oldCapacity=collection.Capacity;
+            var newItems=Enumerable.Range(1, 30).ToArray();
+
+            for (int i = 1; i <= 30; i++)
+            {
+                collection.Add(i);
+            }
+
+            Assert.That(collection.ToString(), Is.EqualTo($"[2, 5, 6, {string.Join(", ", newItems)}]"));
+            Assert.That(collection.Capacity, Is.GreaterThan(oldCapacity));
+        }
+
+        [Test]
+        public void Test_Collection_Clear()
+        {
+            var collection = new Collection<int>(2, 5, 6);
+            var oldCount = collection.Count;
+
+            collection.Clear();
+
+            Assert.That(collection.ToString(), Is.EqualTo("[]"));
+            Assert.That(collection.Count, Is.LessThan(oldCount));
         }
     }
 }
